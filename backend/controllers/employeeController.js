@@ -17,7 +17,7 @@ exports.getEmployeesByFilter = async(req, res, next) => {
   if (EmpId && EmpId.trim() !== '') {
     conditions.push('TRIM(LOWER(EmpId)) = ?');
     params.push(EmpId.trim().toLowerCase());
-  }rai
+  }
   if (city && city.trim() !== '') {
     conditions.push('TRIM(LOWER(city)) = ?');
     params.push(city.trim().toLowerCase());
