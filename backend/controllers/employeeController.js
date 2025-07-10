@@ -40,6 +40,7 @@ console.log(query,params);
 
 exports.addEmployee = async(req, res, next) => {
   const { EmpId, name, city, department } = req.body;
+  
   if (!EmpId || !name || !city || !department) {
     return res.status(400).json({ message: "All fields are required" });
   }
@@ -47,15 +48,15 @@ exports.addEmployee = async(req, res, next) => {
   db.get('SELECT EmpId FROM employees WHERE EmpId = ?', [EmpId], (err, row) => {
     if (err) return next(err);
     if (row) {
-      return res.status(409).json({ message: "Employee with this EmpId already exists" });
+      return res.status(409).json({ message: "Employee with this ID already exists" });
     }
 
-    // If not exists, insert new employee
     const query = 'INSERT INTO employees (EmpId, name, city, department) VALUES (?, ?, ?, ?)';
     db.run(query, [EmpId, name, city, department], function (err) {
       if (err) return next(err);
-      // Log the action
-      logAction('ADD_EMPLOYEE', EmpId, 'system', { name, city, department });
+     const userRole = req.user?.role || 'system'; 
+      console.log('userRole:', userRole);
+      logAction('ADD_EMPLOYEE', EmpId, userRole, { name, city, department });
       res.status(201).json({ id: EmpId, message: "Employee details have been created successfully" });
     });
   });
@@ -76,7 +77,7 @@ exports.deleteEmployee=async(req, res, next) => {
       db.run('DELETE FROM employees WHERE EmpId = ?', [EmpId], function (err) {
         if (err) return next(err);
         // Log the action
-        logAction('DELETE_EMPLOYEE', EmpId, 'system', { EmpId });
+        logAction('DELETE_EMPLOYEE', EmpId, 'admin', { EmpId });
         res.status(200).json({ message: `EmployeeID ${EmpId} details have been deleted successfully` });
       });
     }

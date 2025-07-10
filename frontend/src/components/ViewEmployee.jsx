@@ -1,23 +1,37 @@
 import React, { useEffect, useState } from 'react'
 import axios from 'axios'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 
 export default function ViewEmployees() {
   const [employees, setEmployees] = useState([])
   const [loading, setLoading] = useState(true)
   const [message, setMessage] = useState('')
+  const navigate = useNavigate()
 
   useEffect(() => {
-    axios.get('/api/employees/getAllEmployees')
+    const token = localStorage.getItem('token');
+    if(!token) {
+      navigate('/login');
+      return;
+    }
+    axios.get('/api/employees/getAllEmployees', {
+        headers: { Authorization: `Bearer ${token}` }
+      })
       .then(res => {
         setEmployees(res.data)
         setLoading(false)
       })
-      .catch(() => {
-        setMessage('Error fetching employees.')
+      .catch(err => {
         setLoading(false)
-      })
-  }, [])
+        if (err.response?.status === 401 || err.response?.status === 403) {
+          localStorage.removeItem('token')
+          alert('Failed to get all employees details. Please login again.');
+          navigate('/dashboard');
+        } else {
+          setMessage('Error fetching employees.');
+        }
+      });
+  }, [navigate]);
 
   return (
     <div className="container">
@@ -47,7 +61,8 @@ export default function ViewEmployees() {
       )}
       {message && <p>{message}</p>}
       <br />
-      <Link to="/">← Back to Home</Link>
+      {/* <Link to="/">← Back to Home</Link> */}
+      <Link to="/Dashboard">← Back to Dashboard</Link>
     </div>
   )
 }

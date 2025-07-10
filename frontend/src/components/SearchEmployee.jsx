@@ -48,10 +48,18 @@ const handleSearch = async e => {
     setResult(null)
     return
   }
+  const token = localStorage.getItem('token') 
+  if (!token) {
+    setMessage('Unauthorized: No token found.')
+    navigate('/login')
+    return
+  }
   try {
-    // Build query string
+    
     const params = new URLSearchParams({ [searchType]: searchValue }).toString()
-    const res = await axios.get(`/api/employees/filter?${params}`)
+    const res = await axios.get(`/api/employees/filter?${params}`, {
+      headers: { Authorization: `Bearer ${token}` }
+    })
     if (res.data && (Array.isArray(res.data) ? res.data.length : Object.keys(res.data).length)) {
       setResult(res.data)
       setMessage('')
@@ -59,10 +67,18 @@ const handleSearch = async e => {
       setResult(null)
       setMessage(res.data.message || 'No employees found.')
     }
-  } catch (err) {
+  } 
+  catch (err) {
+  if (err.response?.status === 401 || err.response?.status === 403) {
+    localStorage.removeItem('token')
+    alert('Failed to get all employees details.');
+    navigate('/dashboard');
+  } else {
     setResult(null)
+    console.log(err);
     setMessage(err.response?.data?.message || 'Error searching employee.')
   }
+}
 }
 
   return (
@@ -124,7 +140,9 @@ const handleSearch = async e => {
         )
       )}
       <br />
-      <Link to="/">← Back to Home</Link>
+      {/* <Link to="/">← Back to Home</Link> */}
+      <Link to="/Dashboard">← Back to Dashboard</Link>
+      
     </div>
   )
 }

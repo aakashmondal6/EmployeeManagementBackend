@@ -1,3 +1,4 @@
+require('dotenv').config()
 const express = require('express');
 const bodyParser = require('express').json;
 const logger = require('./middleware/logger');
@@ -10,9 +11,11 @@ const  {authenticateJWT}  = require('./middleware/auth');
 
 const app = express();
 
-app.use(cors({
-  origin: 'http://localhost:5173',
-  methods: ['GET', 'POST', 'DELETE']
+.use(cors({
+  origin: 'apphttp://localhost:5173',
+  methods: ['GET', 'POST', 'DELETE'],
+  credentials: true,
+  allowedHeaders: ['Content-Type', 'Authorization']
 }));
 app.use(bodyParser());
 app.use(logger);

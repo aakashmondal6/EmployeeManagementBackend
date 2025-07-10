@@ -1,23 +1,35 @@
 import React, { useState } from 'react'
 import axios from 'axios'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 
 export default function AddEmployee() {
   const [form, setForm] = useState({ EmpId: '', name: '', city: '', department: '' })
   const [message, setMessage] = useState('')
+  const navigate = useNavigate()
 
-  const handleChange = e => {
-    setForm({ ...form, [e.target.name]: e.target.value })
-  }
+  const handleChange = e => setForm({ ...form, [e.target.name]: e.target.value })
 
   const handleSubmit = async e => {
     e.preventDefault()
     try {
-      const res = await axios.post('/api/employees/AddEmployee', form)
+      const token = localStorage.getItem('token');
+    if(!token) {
+      navigate('/login');
+      return;
+    }
+      const res = await axios.post('/api/employees/AddEmployee', form, {
+        headers: { Authorization: `Bearer ${token}` }
+      })
       setMessage(res.data.message || 'Employee added successfully!')
       setForm({ EmpId: '', name: '', city: '', department: '' })
     } catch (err) {
-      setMessage(err.response?.data?.message || 'Error adding employee.')
+      if (err.response?.status === 401 || err.response?.status === 403) {
+        localStorage.removeItem('token')
+        alert('Failed to add employee details. Please try again.');
+        navigate('/dashboard');
+      } else {
+        setMessage(err.response?.data?.message || 'Error adding employee.')
+      }
     }
   }
 
@@ -33,7 +45,8 @@ export default function AddEmployee() {
       </form>
       {message && <p>{message}</p>}
       <br />
-      <Link to="/">← Back to Home</Link>
+      {/* <Link to="/">← Back to Home</Link> */}
+      <Link to="/Dashboard">← Back to Dashboard</Link>
     </div>
   )
 }
