@@ -17,6 +17,7 @@ export default function AddEmployee() {
       navigate('/login');
       return;
     }
+    // Prepare the form data
       const res = await axios.post('/api/employees/AddEmployee', form, {
         headers: { Authorization: `Bearer ${token}` }
       })

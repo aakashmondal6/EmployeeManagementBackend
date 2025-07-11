@@ -60,12 +60,16 @@ const handleSearch = async e => {
     const res = await axios.get(`/api/employees/filter?${params}`, {
       headers: { Authorization: `Bearer ${token}` }
     })
-    if (res.data && (Array.isArray(res.data) ? res.data.length : Object.keys(res.data).length)) {
+   if (res.data?.message) {
+      setResult(null)
+      setMessage(res.data.message)
+    } else if (res.data && (Array.isArray(res.data) ? res.data.length > 0 : Object.keys(res.data).length > 0)) {
       setResult(res.data)
       setMessage('')
-    } else {
+    }
+    else {
       setResult(null)
-      setMessage(res.data.message || 'No employees found.')
+      setMessage('No employees found.')
     }
   } 
   catch (err) {
